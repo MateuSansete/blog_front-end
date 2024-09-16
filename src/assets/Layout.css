@@ -1,0 +1,14 @@
+header {
+    background-color: var(--primary-color);
+    padding: 20px;
+    color: white;
+    text-align: center;
+  }
+  
+  footer {
+    background-color: #333;
+    padding: 10px;
+    color: white;
+    text-align: center;
+  }
+  

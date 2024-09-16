@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>Login</h2>
+    <h2>UserLogin</h2>
     <form @submit.prevent="login">
       <input v-model="username" type="text" placeholder="Username" />
       <input v-model="password" type="password" placeholder="Password" />
@@ -26,8 +26,9 @@ export default {
           username: this.username,
           password: this.password
         });
-        // Armazenar token e redirecionar para a dashboard
-        this.$router.push('/dashboard');
+        // Armazene o token no localStorage ou em um estado gerenciado
+        localStorage.setItem('authToken', response.data.token); // Ajuste conforme necessário
+        this.$router.push('/dashboard'); // Redirecionar para a dashboard após o login
       } catch (error) {
         console.error('Login failed', error);
       }
@@ -35,3 +36,4 @@ export default {
   }
 };
 </script>
+

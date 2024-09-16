@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>Blog Dashboard</h2>
+    <h2>BlogDashboard</h2>
     <div class="scrollview">
       <div v-for="post in posts" :key="post.id" class="card">
         <h3>{{ post.title }}</h3>
@@ -21,19 +21,20 @@
 import axios from 'axios';
 
 export default {
+  name: 'BlogDashboard', // Atualize o nome do componente se necessário
   data() {
     return {
       posts: []
     };
   },
   async created() {
-    this.fetchPosts();
+    await this.fetchPosts(); // Adicione 'await' para garantir que a chamada seja concluída antes de continuar
   },
   methods: {
     async fetchPosts() {
       try {
         const response = await axios.get('http://localhost:3000/blog/posts');
-        this.posts = response.data;
+        this.posts = response.data; // Certifique-se de que 'response' é utilizado
       } catch (error) {
         console.error('Error fetching posts', error);
       }
@@ -48,16 +49,22 @@ export default {
       };
       try {
         await axios.post('http://localhost:3000/blog/posts', newPost);
-        this.fetchPosts();
+        await this.fetchPosts(); // Adicione 'await' para garantir que a chamada seja concluída
       } catch (error) {
         console.error('Error creating post', error);
       }
     },
     async editPost(id) {
-      const updatedPost = { ... };
+      const updatedPost = {
+        title: 'Título atualizado',
+        subtitle: 'Subtítulo atualizado',
+        text: 'Texto atualizado',
+        likes: 10, // ou outra lógica para capturar dados
+        dislikes: 1
+      };
       try {
         await axios.put(`http://localhost:3000/blog/posts/${id}`, updatedPost);
-        this.fetchPosts();
+        await this.fetchPosts(); // Adicione 'await' para garantir que a chamada seja concluída
       } catch (error) {
         console.error('Error updating post', error);
       }
@@ -65,7 +72,7 @@ export default {
     async deletePost(id) {
       try {
         await axios.delete(`http://localhost:3000/blog/posts/${id}`);
-        this.fetchPosts();
+        await this.fetchPosts(); // Adicione 'await' para garantir que a chamada seja concluída
       } catch (error) {
         console.error('Error deleting post', error);
       }
