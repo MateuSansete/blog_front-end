@@ -1,22 +1,20 @@
 <template>
-  <div>
-    <h2>BlogDashboard</h2>
-    <div class="scrollview">
-      <div v-for="post in posts" :key="post.id" class="card">
-        <h3>{{ post.title }}</h3>
+  <div class="dashboard-container">
+    <h1>Blog Dashboard</h1>
+    <div class="card-container">
+      <div class="card" v-for="(post, index) in posts" :key="index">
+        <h2>{{ post.title }}</h2>
         <h4>{{ post.subtitle }}</h4>
         <p>{{ post.text }}</p>
-        <div>
-          Likes: {{ post.likes }} | Dislikes: {{ post.dislikes }}
+        <div class="reaction">
+          <button @click="post.likes++">👍 {{ post.likes }}</button>
+          <button @click="post.dislikes++">👎 {{ post.dislikes }}</button>
         </div>
-        <button @click="editPost(post.id)">Edit</button>
-        <button @click="deletePost(post.id)">Delete</button>
       </div>
     </div>
     <button @click="createPost">Add New Post</button>
   </div>
 </template>
-
 <script>
 import axios from 'axios';
 
@@ -80,3 +78,79 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.dashboard-container {
+  padding: 2rem;
+  background-color: #f9f9f9;
+  min-height: 100vh;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.card {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+h2 {
+  font-size: 1.5rem;
+  color: #007bff;
+  margin-bottom: 0.5rem;
+}
+
+h4 {
+  font-size: 1.2rem;
+  color: #555;
+  margin-bottom: 1rem;
+}
+
+p {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.reaction {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+button {
+  background-color: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #555;
+  transition: color 0.2s ease;
+}
+
+button:hover {
+  color: #007bff;
+}
+
+button:focus {
+  outline: none;
+}
+</style>
