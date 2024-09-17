@@ -1,8 +1,9 @@
 <template>
   <div>
     <div class="dashboard-container">
-      <h1>Blog Dashboard</h1>
-      <button @click="showDialog = true" class="new-post-button">Novo Post</button>
+      <h1>Blog de Leitura </h1>
+      <button @click="openNewPostDialog" class="new-post-button">Novo Post</button>
+
       <div class="card-container">
         <div class="card" v-for="(post, index) in posts" :key="index">
           <h2>{{ post.title }}</h2>
@@ -12,13 +13,19 @@
             <button @click="post.likes++">👍 {{ post.likes }}</button>
             <button @click="post.dislikes++">👎 {{ post.dislikes }}</button>
           </div>
+          <div class="actions">
+            <button @click="openEditDialog(post, index)">✏️ Editar</button>
+            <button @click="deletePost(post.id)">🗑️ Excluir</button>
+          </div>
         </div>
       </div>
     </div>
-    <div v-if="showDialog" class="dialog-overlay" @click.self="showDialog = false">
+
+    <!-- Dialog para criação e edição de posts -->
+    <div v-if="showDialog" class="dialog-overlay" @click.self="closeDialog">
       <div class="dialog-box">
-        <h2>Novo Post</h2>
-        <form @submit.prevent="createPost">
+        <h2>{{ isEditing ? 'Editar Post' : 'Novo Post' }}</h2>
+        <form @submit.prevent="isEditing ? updatePost() : createPost()">
           <div class="input-group">
             <label for="title">Title</label>
             <input type="text" v-model="newPost.title" id="title" required />
@@ -39,22 +46,25 @@
             <label for="dislikes">Dislikes</label>
             <input type="number" v-model="newPost.dislikes" id="dislikes" min="0" required />
           </div>
-          <button type="submit" class="submit-button">Submeter</button>
+          <button type="submit" class="submit-button">{{ isEditing ? 'Atualizar' : 'Submeter' }}</button>
         </form>
-        <button @click="showDialog = false" class="close-button">Fechar</button>
+        <button @click="closeDialog" class="close-button">Fechar</button>
       </div>
     </div>
   </div>
 </template>
+
 <script>
 import axios from 'axios';
 
 export default {
-  name: 'BlogDashboard', // Atualize o nome do componente se necessário
+  name: 'BlogDashboard',
   data() {
     return {
       posts: [],
       showDialog: false,
+      isEditing: false,
+      editIndex: null, // Mantém o índice do post em edição
       newPost: {
         title: '',
         subtitle: '',
@@ -65,47 +75,58 @@ export default {
     };
   },
   async created() {
-    await this.fetchPosts(); // Adicione 'await' para garantir que a chamada seja concluída antes de continuar
+    await this.fetchPosts();
   },
   methods: {
     async fetchPosts() {
       try {
         const response = await axios.get('http://localhost:3000/blog/posts');
-        this.posts = response.data; // Certifique-se de que 'response' é utilizado
+        this.posts = response.data;
       } catch (error) {
         console.error('Error fetching posts', error);
       }
     },
+    openNewPostDialog() {
+      this.showDialog = true;
+      this.isEditing = false;
+      this.resetForm();
+    },
+    openEditDialog(post, index) {
+      this.newPost = { ...post };
+      this.editIndex = index;
+      this.isEditing = true;
+      this.showDialog = true;
+    },
+    closeDialog() {
+      this.showDialog = false;
+      this.resetForm();
+    },
+    resetForm() {
+      this.newPost = {
+        title: '',
+        subtitle: '',
+        text: '',
+        likes: 0,
+        dislikes: 0
+      };
+    },
     async createPost() {
       try {
         const payload = this.newPost;
-
-        this.newPost = {
-          title: '',
-          subtitle: '',
-          text: '',
-          likes: 0,
-          dislikes: 0
-        }
-
         await axios.post('http://localhost:3000/blog/posts', payload);
-        await this.fetchPosts(); // Adicione 'await' para garantir que a chamada seja concluída
-        this.showDialog = false
+        await this.fetchPosts();
+        this.closeDialog();
       } catch (error) {
         console.error('Error creating post', error);
       }
     },
-    async editPost(id) {
-      const updatedPost = {
-        title: 'Título atualizado',
-        subtitle: 'Subtítulo atualizado',
-        text: 'Texto atualizado',
-        likes: 10, // ou outra lógica para capturar dados
-        dislikes: 1
-      };
+    async updatePost() {
       try {
-        await axios.put(`http://localhost:3000/blog/posts/${id}`, updatedPost);
-        await this.fetchPosts(); // Adicione 'await' para garantir que a chamada seja concluída
+        const updatedPost = this.newPost;
+        const postId = this.posts[this.editIndex].id;
+        await axios.put(`http://localhost:3000/blog/posts/${postId}`, updatedPost);
+        await this.fetchPosts();
+        this.closeDialog();
       } catch (error) {
         console.error('Error updating post', error);
       }
@@ -113,7 +134,7 @@ export default {
     async deletePost(id) {
       try {
         await axios.delete(`http://localhost:3000/blog/posts/${id}`);
-        await this.fetchPosts(); // Adicione 'await' para garantir que a chamada seja concluída
+        await this.fetchPosts();
       } catch (error) {
         console.error('Error deleting post', error);
       }
@@ -123,6 +144,7 @@ export default {
 </script>
 
 <style scoped>
+/* Estilos existentes */
 .dashboard-container {
   padding: 2rem;
   background-color: #f9f9f9;
@@ -193,8 +215,10 @@ button:hover {
   color: #007bff;
 }
 
-button:focus {
-  outline: none;
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
 }
 
 /* Dialog */
